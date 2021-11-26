@@ -27,6 +27,7 @@ struct Context {
 
 struct Options {
     std::string protocol;
+    std::string client_protocol;
     std::string output;
     bool client_use_progress_thread;
     bool server_use_progress_thread;
@@ -63,8 +64,10 @@ int main(int argc, char** argv) {
             spdlog::critical("Could not open {}", options.output);
             exit(-1);
         }
+        if(options.client_protocol.empty())
+            options.client_protocol = options.protocol;
 
-        context.engine = tl::engine(options.protocol, THALLIUM_CLIENT_MODE,
+        context.engine = tl::engine(options.client_protocol, THALLIUM_CLIENT_MODE,
                             options.client_use_progress_thread);
         setup_rpc_handlers(context);
         std::array<char, 256> buffer;
@@ -129,6 +132,8 @@ Options parse_command_line(int argc, char **argv) {
         TCLAP::CmdLine cmd("Mochi Xfer Benchmark", ' ', "0.1");
         TCLAP::ValueArg<std::string> protocol(
             "p", "protocol", "Address or protocol (e.g. ofi+tcp)", true, "", "string");
+        TCLAP::ValueArg<std::string> clientProtocol(
+            "c", "client-protocol", "Address or protocol for the client, if different from the server", false, "", "string");
         TCLAP::ValueArg<std::string> output(
             "o", "output", "Output file name (CSV)", true, "", "string");
         TCLAP::ValueArg<std::string> logLevel("v", "verbose",
@@ -148,6 +153,7 @@ Options parse_command_line(int argc, char **argv) {
             true, "Sizes of the transfers to execute");
 
         cmd.add(protocol);
+        cmd.add(clientProtocol);
         cmd.add(output);
         cmd.add(logLevel);
         cmd.add(clientUseProgressThread);
@@ -159,6 +165,7 @@ Options parse_command_line(int argc, char **argv) {
         cmd.parse(argc, argv);
 
         options.protocol = protocol.getValue();
+        options.client_protocol = clientProtocol.getValue();
         options.output = output.getValue();
         options.client_use_progress_thread = clientUseProgressThread.getValue();
         options.server_use_progress_thread = serverUseProgressThread.getValue();
