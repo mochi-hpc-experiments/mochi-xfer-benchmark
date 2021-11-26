@@ -2,7 +2,10 @@
 
 This benchmark is specifically designed to answer one question:
 what is the best way to transfer N bytes from a client to a server
-in Mochi, on a given platform?
+in Mochi, on a given platform? Its tests includes relying on RPC
+arguments, registering a different buffer at every operation for
+RDMA, or re-using a preregistered buffer (which for clients
+means copying the payload to it).
 
 ## Installing
 
